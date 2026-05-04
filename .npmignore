@@ -1,0 +1,13 @@
+src
+scripts
+.github
+node_modules
+*.log
+.DS_Store
+.env
+.env.*
+coverage
+biome.json
+tsconfig.json
+tsup.config.ts
+pnpm-lock.yaml
