@@ -37,10 +37,7 @@ async function main(): Promise<void> {
 			async (args: unknown) => {
 				const startedAt = Date.now();
 				try {
-					const result = await tool.handler(
-						args as Parameters<typeof tool.handler>[0],
-						{ client }
-					);
+					const result = await tool.handler(args as Parameters<typeof tool.handler>[0], { client });
 					telemetry.track({
 						tool: tool.name,
 						success: true,
@@ -57,8 +54,7 @@ async function main(): Promise<void> {
 				} catch (cause) {
 					const isApiError = cause instanceof RaygisterApiError;
 					const status = isApiError ? cause.status : "unknown";
-					const message =
-						cause instanceof Error ? cause.message : String(cause);
+					const message = cause instanceof Error ? cause.message : String(cause);
 					logger.error("tool failed", {
 						tool: tool.name,
 						status,

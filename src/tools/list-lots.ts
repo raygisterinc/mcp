@@ -6,12 +6,7 @@ const inputSchema = {
 		.string()
 		.uuid("projectId must be a valid UUID")
 		.describe("UUID of the parent project"),
-	page: z
-		.number()
-		.int()
-		.min(1)
-		.optional()
-		.describe("Page number, 1-indexed. Defaults to 1."),
+	page: z.number().int().min(1).optional().describe("Page number, 1-indexed. Defaults to 1."),
 	per_page: z
 		.number()
 		.int()

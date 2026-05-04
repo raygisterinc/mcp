@@ -6,16 +6,8 @@ const inputSchema = {
 		.string()
 		.uuid("projectId must be a valid UUID")
 		.describe("UUID of the parent project"),
-	lotId: z
-		.string()
-		.uuid("lotId must be a valid UUID")
-		.describe("UUID of the lot"),
-	page: z
-		.number()
-		.int()
-		.min(1)
-		.optional()
-		.describe("Page number, 1-indexed. Defaults to 1."),
+	lotId: z.string().uuid("lotId must be a valid UUID").describe("UUID of the lot"),
+	page: z.number().int().min(1).optional().describe("Page number, 1-indexed. Defaults to 1."),
 	per_page: z
 		.number()
 		.int()

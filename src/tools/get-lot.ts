@@ -6,10 +6,7 @@ const inputSchema = {
 		.string()
 		.uuid("projectId must be a valid UUID")
 		.describe("UUID of the parent project"),
-	lotId: z
-		.string()
-		.uuid("lotId must be a valid UUID")
-		.describe("UUID of the lot"),
+	lotId: z.string().uuid("lotId must be a valid UUID").describe("UUID of the lot"),
 };
 
 export const getLotTool: ToolDefinition<typeof inputSchema> = {

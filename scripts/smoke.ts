@@ -87,9 +87,7 @@ async function main(): Promise<void> {
 	const projectId =
 		projectsResult.status === "ok"
 			? pickFirstId(
-					await client
-						.get<unknown>("/v1/projects", { page: 1, per_page: 5 })
-						.catch(() => null)
+					await client.get<unknown>("/v1/projects", { page: 1, per_page: 5 }).catch(() => null)
 				)
 			: null;
 
@@ -189,10 +187,10 @@ async function main(): Promise<void> {
 				await run(
 					"list_specifications",
 					() =>
-						client.get<unknown>(
-							`/v1/projects/${projectId}/lots/${lotId}/specifications`,
-							{ page: 1, per_page: 5 }
-						),
+						client.get<unknown>(`/v1/projects/${projectId}/lots/${lotId}/specifications`, {
+							page: 1,
+							per_page: 5,
+						}),
 					() => "specifications fetched"
 				)
 			);
