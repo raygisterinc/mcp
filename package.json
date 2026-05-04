@@ -27,7 +27,7 @@
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"bin": {
-		"raygister-mcp": "./dist/index.js"
+		"raygister-mcp": "dist/index.js"
 	},
 	"files": [
 		"dist",
