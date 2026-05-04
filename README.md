@@ -88,7 +88,7 @@ When `POSTHOG_API_KEY` is unset, the telemetry layer is a strict no-op. When set
 ## Local development
 
 ```bash
-git clone https://github.com/raygister/mcp.git
+git clone https://github.com/raygisterinc/mcp.git
 cd mcp
 pnpm install
 pnpm build
@@ -115,7 +115,7 @@ The script calls each tool sequentially and prints success or failure per endpoi
 
 ## Contributing
 
-Issues and pull requests welcome at [github.com/raygister/mcp](https://github.com/raygister/mcp). Please open an issue first if you plan a non-trivial change.
+Issues and pull requests welcome at [github.com/raygisterinc/mcp](https://github.com/raygisterinc/mcp). Please open an issue first if you plan a non-trivial change.
 
 ## License
 

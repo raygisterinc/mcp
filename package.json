@@ -12,13 +12,13 @@
 		"claude",
 		"anthropic"
 	],
-	"homepage": "https://github.com/raygister/mcp#readme",
+	"homepage": "https://github.com/raygisterinc/mcp#readme",
 	"bugs": {
-		"url": "https://github.com/raygister/mcp/issues"
+		"url": "https://github.com/raygisterinc/mcp/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/raygister/mcp.git"
+		"url": "git+https://github.com/raygisterinc/mcp.git"
 	},
 	"license": "MIT",
 	"author": "Raygister",

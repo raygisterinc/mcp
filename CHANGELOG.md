@@ -24,5 +24,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional PostHog telemetry (no-op when not configured).
 - Smoke test script for end-to-end validation against a live API key.
 
-[Unreleased]: https://github.com/raygister/mcp/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/raygister/mcp/releases/tag/v0.1.0
+[Unreleased]: https://github.com/raygisterinc/mcp/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/raygisterinc/mcp/releases/tag/v0.1.0
