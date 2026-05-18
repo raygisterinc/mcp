@@ -1,6 +1,6 @@
 # @raygister/mcp
 
-Read-only Model Context Protocol server for [Raygister](https://app.raygister.com), the SaaS for architects to manage construction consultation projects (DPGF, lots, specifications, locations).
+Read-only Model Context Protocol server for [Raygister](https://www.raygister.com), the SaaS for architects to manage construction consultation projects (DPGF, lots, specifications, locations).
 
 [![npm version](https://img.shields.io/npm/v/@raygister/mcp.svg)](https://www.npmjs.com/package/@raygister/mcp)
 [![license](https://img.shields.io/npm/l/@raygister/mcp.svg)](./LICENSE)
