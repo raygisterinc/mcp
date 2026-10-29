@@ -1,7 +1,7 @@
 {
 	"name": "@raygister/mcp",
-	"version": "0.1.0",
-	"description": "Read-only MCP server for the Raygister API. Lets AI assistants browse architecture consultation projects, lots, specifications, and locations.",
+	"version": "0.2.0",
+	"description": "Read-only MCP server for the Raygister API. Lets AI assistants read construction projects, lots, specifications, locations and their amounts.",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",
@@ -23,9 +23,6 @@
 	"license": "MIT",
 	"author": "Raygister",
 	"type": "module",
-	"main": "./dist/index.js",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
 	"bin": {
 		"raygister-mcp": "dist/index.js"
 	},
@@ -41,23 +38,24 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",
-		"smoke": "tsx scripts/smoke.ts",
+		"test": "vitest run",
+		"smoke": "pnpm build && tsx scripts/smoke.ts",
 		"prepublishOnly": "pnpm build"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.0.4",
-		"posthog-node": "^4.2.1",
-		"zod": "^3.23.8"
+		"@modelcontextprotocol/sdk": "^1.32.2",
+		"zod": "^4.6.7"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.7",
-		"@types/node": "^20.14.0",
-		"tsup": "^8.3.5",
-		"tsx": "^4.19.2",
-		"typescript": "^5.6.3"
+		"@biomejs/biome": "^2.6.4",
+		"@types/node": "^22.20.5",
+		"tsup": "^9.0.0",
+		"tsx": "^4.23.15",
+		"typescript": "^7.0.2",
+		"vitest": "^5.0.5"
 	},
 	"engines": {
-		"node": ">=20"
+		"node": ">=22"
 	},
 	"packageManager": "pnpm@10.33.0"
 }

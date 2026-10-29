@@ -1,213 +1,84 @@
 /**
- * Smoke test script for the Raygister MCP wrappers.
+ * Smoke test of the built server against a live API key.
  *
  * Usage:
  *   export RAYGISTER_API_KEY=dk_your_key
+ *   export RAYGISTER_API_URL=http://localhost:3000/api   # optional
  *   pnpm smoke
  *
- * Iterates through all six tools, picking the first project and lot it finds
- * to chain into the nested endpoints. Prints success or error per tool.
+ * Starts dist/index.js over stdio like an MCP client would, then calls every
+ * tool on the first project and lot it finds. The server checks each answer
+ * against the tool's output schema, so a drift between the API and the
+ * schemas fails here.
  */
 
-import { createClient, RaygisterApiError } from "../src/client.js";
-import { loadEnv } from "../src/env.js";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
-type Status = "ok" | "skip" | "fail";
+type Args = Record<string, unknown>;
 
-interface Result {
-	tool: string;
-	status: Status;
-	detail: string;
-	durationMs: number;
-}
+const client = new Client({ name: "raygister-mcp-smoke", version: "0.0.0" });
+let failed = 0;
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
-}
-
-function pickFirstId(payload: unknown): string | null {
-	if (!isRecord(payload)) {
-		return null;
-	}
-	const data = payload.data;
-	if (!Array.isArray(data) || data.length === 0) {
-		return null;
-	}
-	const first = data[0];
-	if (!isRecord(first)) {
-		return null;
-	}
-	const id = first.id;
-	return typeof id === "string" ? id : null;
-}
-
-async function run<T>(
-	tool: string,
-	fn: () => Promise<T>,
-	onSuccess: (value: T) => string
-): Promise<Result> {
+async function call(name: string, args: Args): Promise<Args | null> {
 	const startedAt = Date.now();
-	try {
-		const value = await fn();
-		return {
-			tool,
-			status: "ok",
-			detail: onSuccess(value),
-			durationMs: Date.now() - startedAt,
-		};
-	} catch (cause) {
-		const status = cause instanceof RaygisterApiError ? `${cause.status}` : "error";
-		const message = cause instanceof Error ? cause.message : String(cause);
-		return {
-			tool,
-			status: "fail",
-			detail: `[${status}] ${message}`,
-			durationMs: Date.now() - startedAt,
-		};
+	const result = await client.callTool({ arguments: args, name });
+	const ms = Date.now() - startedAt;
+	if (result.isError) {
+		failed += 1;
+		const content = result.content as Array<{ text?: string }>;
+		process.stderr.write(`FAIL  ${name} (${ms}ms)  ${content[0]?.text ?? ""}\n`);
+		return null;
 	}
+	process.stderr.write(`OK    ${name} (${ms}ms)\n`);
+	return (result.structuredContent ?? {}) as Args;
+}
+
+function skip(name: string, reason: string): void {
+	process.stderr.write(`SKIP  ${name}  ${reason}\n`);
+}
+
+function firstId(list: unknown): string | null {
+	const first = Array.isArray(list) ? (list[0] as Args | undefined) : undefined;
+	return typeof first?.id === "string" ? first.id : null;
 }
 
 async function main(): Promise<void> {
-	const env = loadEnv();
-	const client = createClient(env);
-	const results: Result[] = [];
+	if (!process.env.RAYGISTER_API_KEY) {
+		throw new Error("Set RAYGISTER_API_KEY first.");
+	}
+	const env: Record<string, string> = { RAYGISTER_API_KEY: process.env.RAYGISTER_API_KEY };
+	if (process.env.RAYGISTER_API_URL) {
+		env.RAYGISTER_API_URL = process.env.RAYGISTER_API_URL;
+	}
+	process.stderr.write(`Running smoke against ${env.RAYGISTER_API_URL ?? "the default API"}\n\n`);
 
-	process.stderr.write(`Running smoke against ${env.RAYGISTER_API_URL}\n\n`);
-
-	const projectsResult = await run(
-		"list_projects",
-		() => client.get<unknown>("/v1/projects", { page: 1, per_page: 5 }),
-		(value) => {
-			const id = pickFirstId(value);
-			return id ? `first project: ${id}` : "no projects returned";
-		}
+	await client.connect(
+		new StdioClientTransport({ args: ["dist/index.js"], command: process.execPath, env })
 	);
-	results.push(projectsResult);
+	const { tools } = await client.listTools();
+	process.stderr.write(`${tools.length} tools: ${tools.map((tool) => tool.name).join(", ")}\n\n`);
 
-	const projectId =
-		projectsResult.status === "ok"
-			? pickFirstId(
-					await client.get<unknown>("/v1/projects", { page: 1, per_page: 5 }).catch(() => null)
-				)
-			: null;
-
+	const projects = await call("list_projects", { per_page: 5 });
+	const projectId = firstId(projects?.projects);
 	if (!projectId) {
-		results.push({
-			tool: "get_project",
-			status: "skip",
-			detail: "no project id available",
-			durationMs: 0,
-		});
-		results.push({
-			tool: "list_lots",
-			status: "skip",
-			detail: "no project id available",
-			durationMs: 0,
-		});
-		results.push({
-			tool: "list_locations",
-			status: "skip",
-			detail: "no project id available",
-			durationMs: 0,
-		});
-		results.push({
-			tool: "get_lot",
-			status: "skip",
-			detail: "no project id available",
-			durationMs: 0,
-		});
-		results.push({
-			tool: "list_specifications",
-			status: "skip",
-			detail: "no project id available",
-			durationMs: 0,
-		});
+		skip("project tools", "no project returned");
 	} else {
-		results.push(
-			await run(
-				"get_project",
-				() => client.get<unknown>(`/v1/projects/${projectId}`),
-				() => `project ${projectId} fetched`
-			)
-		);
-
-		const lotsResult = await run(
-			"list_lots",
-			() => client.get<unknown>(`/v1/projects/${projectId}/lots`, { page: 1, per_page: 5 }),
-			(value) => {
-				const id = pickFirstId(value);
-				return id ? `first lot: ${id}` : "no lots returned";
-			}
-		);
-		results.push(lotsResult);
-
-		results.push(
-			await run(
-				"list_locations",
-				() => client.get<unknown>(`/v1/projects/${projectId}/locations`),
-				() => "locations fetched"
-			)
-		);
-
-		const lotId =
-			lotsResult.status === "ok"
-				? pickFirstId(
-						await client
-							.get<unknown>(`/v1/projects/${projectId}/lots`, {
-								page: 1,
-								per_page: 5,
-							})
-							.catch(() => null)
-					)
-				: null;
-
+		await call("get_project", { project_id: projectId });
+		await call("get_project_totals", { project_id: projectId });
+		await call("list_locations", { project_id: projectId });
+		const lots = await call("list_lots", { per_page: 5, project_id: projectId });
+		const lotId = firstId(lots?.lots);
 		if (!lotId) {
-			results.push({
-				tool: "get_lot",
-				status: "skip",
-				detail: "no lot id available",
-				durationMs: 0,
-			});
-			results.push({
-				tool: "list_specifications",
-				status: "skip",
-				detail: "no lot id available",
-				durationMs: 0,
-			});
+			skip("lot tools", "no lot returned");
 		} else {
-			results.push(
-				await run(
-					"get_lot",
-					() => client.get<unknown>(`/v1/projects/${projectId}/lots/${lotId}`),
-					() => `lot ${lotId} fetched`
-				)
-			);
-
-			results.push(
-				await run(
-					"list_specifications",
-					() =>
-						client.get<unknown>(`/v1/projects/${projectId}/lots/${lotId}/specifications`, {
-							page: 1,
-							per_page: 5,
-						}),
-					() => "specifications fetched"
-				)
-			);
+			await call("get_lot", { lot_id: lotId, project_id: projectId });
+			await call("list_specifications", { lot_id: lotId, per_page: 5, project_id: projectId });
 		}
 	}
 
-	let failed = 0;
-	for (const result of results) {
-		const icon = result.status === "ok" ? "OK  " : result.status === "skip" ? "SKIP" : "FAIL";
-		const ms = result.durationMs > 0 ? ` (${result.durationMs}ms)` : "";
-		process.stderr.write(`${icon}  ${result.tool}${ms}  ${result.detail}\n`);
-		if (result.status === "fail") {
-			failed += 1;
-		}
-	}
-
-	process.stderr.write(`\n${results.length - failed}/${results.length} OK or skipped\n`);
+	await client.close();
+	process.stderr.write(failed > 0 ? `\n${failed} tool(s) failed\n` : "\nAll tools answered\n");
 	process.exit(failed > 0 ? 1 : 0);
 }
 

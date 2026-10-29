@@ -1,19 +1,19 @@
 import { z } from "zod";
-import type { ToolDefinition } from "./types.js";
+import { getData } from "../client.js";
+import { IdInput, ProjectSchema } from "../schemas.js";
+import { defineTool, segment } from "./define.js";
 
-const inputSchema = {
-	projectId: z
-		.string()
-		.uuid("projectId must be a valid UUID")
-		.describe("UUID of the Raygister project"),
-};
-
-export const getProjectTool: ToolDefinition<typeof inputSchema> = {
+export const getProjectTool = defineTool({
 	name: "get_project",
+	title: "Get a project",
 	description:
-		"Retrieve full details of a single Raygister project by ID, including counts of lots, locations, and specifications, plus organization context. Use list_projects first if the project ID is unknown.",
-	inputSchema,
-	async handler(args, { client }) {
-		return await client.get(`/v1/projects/${encodeURIComponent(args.projectId)}`);
+		"Get one project by id: name, display_id, phase and phase step, typology, destination, finish level, client, address, dates, forecast budget (HT), project manager (MOE) fees, default management fees and notes. For its amounts, use get_project_totals.",
+	inputSchema: z.object({ project_id: IdInput.describe("Project id, from list_projects.") }),
+	outputSchema: ProjectSchema,
+	async run(args, { client }) {
+		return (await getData(client, `/v1/projects/${segment(args.project_id)}`)) as Record<
+			string,
+			unknown
+		>;
 	},
-};
+});
