@@ -1,33 +1,35 @@
 import { z } from "zod";
-import type { ToolDefinition } from "./types.js";
+import { getPage } from "../client.js";
+import {
+	IdInput,
+	PageInput,
+	PaginationSchema,
+	PerPageInput,
+	SpecificationSchema,
+} from "../schemas.js";
+import { defineTool, segment } from "./define.js";
 
-const inputSchema = {
-	projectId: z
-		.string()
-		.uuid("projectId must be a valid UUID")
-		.describe("UUID of the parent project"),
-	lotId: z.string().uuid("lotId must be a valid UUID").describe("UUID of the lot"),
-	page: z.number().int().min(1).optional().describe("Page number, 1-indexed. Defaults to 1."),
-	per_page: z
-		.number()
-		.int()
-		.min(1)
-		.max(100)
-		.optional()
-		.describe("Items per page, max 100. Defaults to 20."),
-};
-
-export const listSpecificationsTool: ToolDefinition<typeof inputSchema> = {
+export const listSpecificationsTool = defineTool({
 	name: "list_specifications",
+	title: "List a lot's lines",
 	description:
-		"List all specifications of a given lot. Specifications are the detailed line items of the DPGF (project bid document). Returns IDs, descriptions, quantities, units, and tags.",
-	inputSchema,
-	async handler(args, { client }) {
-		const projectId = encodeURIComponent(args.projectId);
-		const lotId = encodeURIComponent(args.lotId);
-		return await client.get(`/v1/projects/${projectId}/lots/${lotId}/specifications`, {
-			page: args.page,
-			per_page: args.per_page,
-		});
+		"List the specifications of a lot, the lines of the DPGF (bill of quantities), in the order of the app's grid, 20 per page by default (up to 100). Each line has its display_id (such as ELEC-004), name, description, quantity, unit (or custom_unit), unit_price (HT; null means not priced yet, 0 is a price), VAT rate, status, technical norms and internal notes.",
+	inputSchema: z.object({
+		lot_id: IdInput.describe("Lot id, from list_lots."),
+		page: PageInput,
+		per_page: PerPageInput,
+		project_id: IdInput.describe("Id of the lot's project."),
+	}),
+	outputSchema: z.object({
+		pagination: PaginationSchema,
+		specifications: z.array(SpecificationSchema),
+	}),
+	async run(args, { client }) {
+		const { data, pagination } = await getPage(
+			client,
+			`/v1/projects/${segment(args.project_id)}/lots/${segment(args.lot_id)}/specifications`,
+			{ page: args.page, per_page: args.per_page }
+		);
+		return { pagination, specifications: data };
 	},
-};
+});

@@ -1,19 +1,17 @@
 import { z } from "zod";
-import type { ToolDefinition } from "./types.js";
+import { getData } from "../client.js";
+import { IdInput, LocationSchema } from "../schemas.js";
+import { defineTool, segment } from "./define.js";
 
-const inputSchema = {
-	projectId: z
-		.string()
-		.uuid("projectId must be a valid UUID")
-		.describe("UUID of the parent project"),
-};
-
-export const listLocationsTool: ToolDefinition<typeof inputSchema> = {
+export const listLocationsTool = defineTool({
 	name: "list_locations",
+	title: "List a project's locations",
 	description:
-		"List all locations (rooms, floors, zones) of a project. Returns location IDs, names, floor numbers, and parent location IDs for hierarchy. The response is a flat list, not paginated.",
-	inputSchema,
-	async handler(args, { client }) {
-		return await client.get(`/v1/projects/${encodeURIComponent(args.projectId)}/locations`);
+		"List every location of a project (rooms, floors, zones) in one call, not paginated. parent_id builds the hierarchy; surface is in square metres.",
+	inputSchema: z.object({ project_id: IdInput.describe("Project id, from list_projects.") }),
+	outputSchema: z.object({ locations: z.array(LocationSchema) }),
+	async run(args, { client }) {
+		const locations = await getData(client, `/v1/projects/${segment(args.project_id)}/locations`);
+		return { locations };
 	},
-};
+});
