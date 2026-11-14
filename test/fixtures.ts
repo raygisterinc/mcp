@@ -49,14 +49,14 @@ export const lot = {
 	notes: null,
 	project_id: PROJECT_ID,
 	sort_order: 1,
-	spec_budget_total: 4795,
-	specifications_count: 1,
+	line_budget_total: 4795,
+	lines_count: 1,
 	start_date: null,
 	status: "draft",
 	updated_at: "2026-10-29T15:30:58.444415+00:00",
 };
 
-export const specification = {
+export const line = {
 	architect_fees_excluded: false,
 	created_at: "2026-10-29T15:30:58.444415+00:00",
 	currency: "EUR",
@@ -112,14 +112,14 @@ export const totals = {
 			id: LOT_ID,
 			management_fees_ht: 130.5,
 			name: "Démolition",
-			specifications_count: 1,
-			unpriced_specifications_count: 0,
+			lines_count: 1,
+			unpriced_lines_count: 0,
 			works_ht: 2610,
 			works_ttc: 3132,
 		},
 	],
-	specifications_count: 1,
-	unpriced_specifications_count: 0,
+	lines_count: 1,
+	unpriced_lines_count: 0,
 	works: { total_ht: 2610, total_ttc: 3132, total_vat: 522, vat: [vat] },
 };
 

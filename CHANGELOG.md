@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Needs the Raygister API v1 where a lot's specifications are called lines (RAY-1108).
+
+### Changed
+
+- `list_specifications` is now `list_lines`. It reads `/v1/projects/{id}/lots/{lot_id}/lines` and returns `{ lines, pagination }`.
+- `get_lot` returns the lot's lines under `lines`.
+- Lot fields `specifications_count` and `spec_budget_total` are now `lines_count` and `line_budget_total`.
+- `get_project_totals` counts are now `lines_count` and `unpriced_lines_count`, for the project and per lot.
+
 ## [0.2.0] - 2026-10-29
 
 Built on the Raygister API v1 contract of October 2026, which this version needs.

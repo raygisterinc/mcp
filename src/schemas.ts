@@ -95,8 +95,8 @@ export const LotSchema = z.looseObject({
 	notes: z.string().nullable(),
 	project_id: z.string(),
 	sort_order: z.number(),
-	spec_budget_total: z.number().describe("Sum of quantity x unit price of the lot's lines, HT."),
-	specifications_count: z.number(),
+	line_budget_total: z.number().describe("Sum of quantity x unit price of the lot's lines, HT."),
+	lines_count: z.number(),
 	start_date: z.string().nullable(),
 	status: z.string().describe("draft, consulting, processing or validated."),
 	updated_at: z.string(),
@@ -108,7 +108,7 @@ export const TaxRateSchema = z.looseObject({
 	rate: z.number().describe("A percentage: 20 for 20 %."),
 });
 
-export const SpecificationSchema = z.looseObject({
+export const LineSchema = z.looseObject({
 	architect_fees_excluded: z.boolean(),
 	created_at: z.string(),
 	currency: z.string(),
@@ -174,14 +174,14 @@ export const ProjectTotalsSchema = z.looseObject({
 			id: z.string(),
 			management_fees_ht: z.number(),
 			name: z.string(),
-			specifications_count: z.number(),
-			unpriced_specifications_count: z.number(),
+			lines_count: z.number(),
+			unpriced_lines_count: z.number(),
 			works_ht: z.number(),
 			works_ttc: z.number(),
 		})
 	),
-	specifications_count: z.number(),
-	unpriced_specifications_count: z
+	lines_count: z.number(),
+	unpriced_lines_count: z
 		.number()
 		.describe("Lines with no unit price yet: they weigh nothing in the totals."),
 	works: z.looseObject({

@@ -7,7 +7,7 @@ export const listLotsTool = defineTool({
 	name: "list_lots",
 	title: "List a project's lots",
 	description:
-		"List the lots of a project (one per trade, such as electricity or plumbing), in the order of the app's grid, 20 per page by default (up to 100). Each lot has its name, its type (name, prefix such as ELEC, and whether Raygister provides it), its status (draft, consulting, processing, validated), its number of specifications, spec_budget_total (sum of its lines, HT), its forecast budget and consultation deadline.",
+		"List the lots of a project (one per trade, such as electricity or plumbing), in the order of the app's grid, 20 per page by default (up to 100). Each lot has its name, its type (name, prefix such as ELEC, and whether Raygister provides it), its status (draft, consulting, processing, validated), its number of lines (lines_count), line_budget_total (sum of its lines, HT), its forecast budget and consultation deadline.",
 	inputSchema: z.object({
 		page: PageInput,
 		per_page: PerPageInput,

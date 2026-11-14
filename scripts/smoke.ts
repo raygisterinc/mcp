@@ -73,7 +73,7 @@ async function main(): Promise<void> {
 			skip("lot tools", "no lot returned");
 		} else {
 			await call("get_lot", { lot_id: lotId, project_id: projectId });
-			await call("list_specifications", { lot_id: lotId, per_page: 5, project_id: projectId });
+			await call("list_lines", { lot_id: lotId, per_page: 5, project_id: projectId });
 		}
 	}
 

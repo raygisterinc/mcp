@@ -1,6 +1,6 @@
 # @raygister/mcp
 
-Read-only Model Context Protocol server for [Raygister](https://www.raygister.com), the platform where architects and project managers describe construction projects in lots and specifications (DPGF), consult companies and award markets.
+Read-only Model Context Protocol server for [Raygister](https://www.raygister.com), the platform where architects and project managers describe construction projects in lots and lines (DPGF), consult companies and award markets.
 
 [![npm version](https://img.shields.io/npm/v/@raygister/mcp.svg)](https://www.npmjs.com/package/@raygister/mcp)
 [![license](https://img.shields.io/npm/l/@raygister/mcp.svg)](./LICENSE)
@@ -14,8 +14,8 @@ Seven read-only tools over the Raygister public API. No tool changes anything, a
 - **`get_project`** read one project: phase, client, address, dates, forecast budget, fee settings
 - **`get_project_totals`** a project's amounts: works HT, VAT per rate and TTC, per lot too, with fees apart
 - **`list_lots`** the lots of a project, one per trade, with their type, status and line counts
-- **`get_lot`** one lot with all its specifications in a single call
-- **`list_specifications`** the lines of a lot: quantity, unit, unit price, VAT rate, norms
+- **`get_lot`** one lot with all its lines in a single call
+- **`list_lines`** the lines of a lot: quantity, unit, unit price, VAT rate, norms
 - **`list_locations`** the rooms, floors and zones of a project, with their hierarchy and surface
 
 Every tool returns structured content matching its output schema, plus the same JSON as text for clients that ignore schemas.
@@ -65,20 +65,20 @@ Amounts are excluding VAT (HT), in the project's currency, unless a field says `
 - "List my Raygister projects and tell me which one has the most lots."
 - "What is the total of the Martin apartment, excluding and including VAT, lot by lot?"
 - "Which lines of the electricity lot are not priced yet?"
-- "Summarise the plumbing lot's specifications with their quantities and units."
+- "Summarise the plumbing lot's lines with their quantities and units."
 - "How many square metres do the rooms of the first floor add up to?"
 
 ## Tool reference
 
-| Name                  | Returns                                                                       | Required inputs          |
-| --------------------- | ----------------------------------------------------------------------------- | ------------------------ |
-| `list_projects`       | `{ projects, pagination }`, sorted by name.                                   | none                     |
-| `get_project`         | One project.                                                                  | `project_id`             |
-| `get_project_totals`  | `{ works, fees, lots, specifications_count, unpriced_specifications_count }`. | `project_id`             |
-| `list_lots`           | `{ lots, pagination }`, in grid order.                                        | `project_id`             |
-| `get_lot`             | One lot with `specifications` (up to 1000).                                   | `project_id`, `lot_id`   |
-| `list_specifications` | `{ specifications, pagination }`, in grid order.                              | `project_id`, `lot_id`   |
-| `list_locations`      | `{ locations }`, not paginated.                                               | `project_id`             |
+| Name                 | Returns                                                     | Required inputs        |
+| -------------------- | ----------------------------------------------------------- | ---------------------- |
+| `list_projects`      | `{ projects, pagination }`, sorted by name.                 | none                   |
+| `get_project`        | One project.                                                | `project_id`           |
+| `get_project_totals` | `{ works, fees, lots, lines_count, unpriced_lines_count }`. | `project_id`           |
+| `list_lots`          | `{ lots, pagination }`, in grid order.                      | `project_id`           |
+| `get_lot`            | One lot with `lines` (up to 1000).                          | `project_id`, `lot_id` |
+| `list_lines`         | `{ lines, pagination }`, in grid order.                     | `project_id`, `lot_id` |
+| `list_locations`     | `{ locations }`, not paginated.                             | `project_id`           |
 
 Paginated tools also accept `page` (default 1) and `per_page` (default 20, max 100).
 
@@ -86,8 +86,8 @@ When the API refuses a call, the tool answers with an error that says what to do
 
 ## Configuration
 
-| Variable            | Required | Default                         | Description                                                    |
-| ------------------- | -------- | ------------------------------- | -------------------------------------------------------------- |
+| Variable             | Required                                                    | Default                |
+| -------------------- | ----------------------------------------------------------- | ---------------------- |
 | `RAYGISTER_API_KEY` | yes      | none                            | API key starting with `dk_`, from Settings > API keys.         |
 | `RAYGISTER_API_URL` | no       | `https://app.raygister.com/api` | API base URL, to point at a staging or local Raygister.        |
 

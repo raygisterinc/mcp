@@ -3,16 +3,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { afterEach, describe, expect, it } from "vitest";
 import { type Query, RaygisterApiError, type RaygisterClient } from "../src/client.js";
 import { createServer } from "../src/server.js";
-import {
-	LOT_ID,
-	location,
-	lot,
-	PROJECT_ID,
-	page,
-	project,
-	specification,
-	totals,
-} from "./fixtures.js";
+import { LOT_ID, line, location, lot, PROJECT_ID, page, project, totals } from "./fixtures.js";
 
 interface Call {
 	path: string;
@@ -67,10 +58,10 @@ describe("tools", () => {
 			"get_lot",
 			"get_project",
 			"get_project_totals",
+			"list_lines",
 			"list_locations",
 			"list_lots",
 			"list_projects",
-			"list_specifications",
 		]);
 		for (const tool of tools) {
 			expect(tool.annotations).toMatchObject({ destructiveHint: false, readOnlyHint: true });
@@ -99,7 +90,7 @@ describe("tools", () => {
 	it("reads a lot with its lines and a project's totals", async () => {
 		const { api } = fakeApi({
 			[`/v1/projects/${PROJECT_ID}/lots/${LOT_ID}`]: {
-				data: { ...lot, specifications: [specification] },
+				data: { ...lot, lines: [line] },
 			},
 			[`/v1/projects/${PROJECT_ID}/totals`]: { data: totals },
 		});
@@ -114,7 +105,7 @@ describe("tools", () => {
 			name: "get_project_totals",
 		});
 
-		expect(lotResult.structuredContent).toMatchObject({ specifications: [specification] });
+		expect(lotResult.structuredContent).toMatchObject({ lines: [line] });
 		expect(totalsResult.structuredContent).toEqual(totals);
 	});
 
