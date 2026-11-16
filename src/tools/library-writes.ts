@@ -109,7 +109,9 @@ export const setTradeGuidanceTool = defineTool({
 
 const GroupFields = {
 	budget_previsionnel: Price,
-	consultant_management_fee: Price.describe("The fee, a percentage unless fee_type is fixed."),
+	consultant_management_fee: Price.describe(
+		"The fee. On a create it is a percentage unless fee_type is fixed; on an update the type left out keeps its value."
+	),
 	custom_name: Text.describe("The group's name; null takes its trade's."),
 	default_tax_rate_id: IdInput.nullable().optional().describe("Default VAT of its new work items."),
 	description: Text,
@@ -138,7 +140,8 @@ export const updateLibraryGroupsTool = defineTool({
 	effect: "update",
 	name: "update_library_groups",
 	title: "Update library groups",
-	description: "Update library groups. Changing a group's trade changes its work items' with it.",
+	description:
+		"Update library groups: only the fields given change. Changing a group's trade changes its work items' with it.",
 	inputSchema: batch(
 		z.object({
 			id: IdInput.describe("Group id, from list_library_groups."),
@@ -168,7 +171,9 @@ export const archiveLibraryGroupsTool = defineTool({
 // --- Work items ---------------------------------------------------------------
 
 const WorkItemFields = {
-	custom_unit: Text.describe("The unit's label when unit is autre."),
+	custom_unit: Text.describe(
+		"The unit's label when unit is autre. Given alone on an update, it makes the unit autre."
+	),
 	description: Text,
 	norms: z
 		.array(z.unknown())
@@ -277,7 +282,8 @@ export const unlinkWorkItemSupplyTool = defineTool({
 	effect: "update",
 	name: "unlink_work_item_supply",
 	title: "Unlink a supply from a work item",
-	description: "Take a supply off a work item; the supply stays in the library.",
+	description:
+		"Take a supply off a work item; the supply stays in the library. An unknown work item is refused.",
 	inputSchema: z.object({ supply_id: IdInput, work_item_id: IdInput }),
 	outputSchema: Ids,
 	async run(args, { client }) {
@@ -320,7 +326,8 @@ export const updateSuppliesTool = defineTool({
 	effect: "update",
 	name: "update_supplies",
 	title: "Update supplies",
-	description: "Update supplies. Their photos are set in Raygister, not here.",
+	description:
+		"Update supplies: only the fields given change, and a supply appears once per call. Their photos are set in Raygister, not here.",
 	inputSchema: batch(
 		z.object({
 			id: IdInput.describe("Supply id, from list_supplies."),
