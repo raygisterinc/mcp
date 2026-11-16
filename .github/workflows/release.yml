@@ -36,3 +36,9 @@ jobs:
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Deprecate every version
+        run: |
+          npm deprecate @raygister/mcp "Deprecated: use the remote server at https://app.raygister.com/mcp (sign in with your Raygister account). See https://www.raygister.com/en/mcp"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
