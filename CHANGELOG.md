@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-16
+
 Needs the Raygister API with the library routes (`/api/v1/library/*`, RAY-1151 for reads, RAY-1154 for writes).
 
 ### Added
@@ -62,6 +64,7 @@ Built on the Raygister API v1 contract of October 2026, which this version needs
 - Optional PostHog telemetry (no-op when not configured).
 - Smoke test script for end-to-end validation against a live API key.
 
-[Unreleased]: https://github.com/raygisterinc/mcp/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/raygisterinc/mcp/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/raygisterinc/mcp/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/raygisterinc/mcp/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/raygisterinc/mcp/releases/tag/v0.1.0

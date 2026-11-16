@@ -1,7 +1,7 @@
 {
 	"name": "@raygister/mcp",
-	"version": "0.2.0",
-	"description": "Read-only MCP server for the Raygister API. Lets AI assistants read construction projects, lots, specifications, locations and their amounts.",
+	"version": "0.3.0",
+	"description": "MCP server for the Raygister API. Lets AI assistants read construction projects, lots, specifications, locations and their amounts, and read and write the organization's library.",
 	"keywords": [
 		"mcp",
 		"model-context-protocol",
