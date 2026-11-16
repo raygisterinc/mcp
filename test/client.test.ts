@@ -50,6 +50,24 @@ describe("createClient", () => {
 		expect(error.message).toContain("Renewing the subscription restores access");
 	});
 
+	it("sends a write as JSON and passes the API's refusal on", async () => {
+		const fetch = answer(422, {
+			error: { code: "validation_failed", message: "Invalid field: items.0.unit_price." },
+		});
+
+		const error = await refusal(
+			createClient(env).send("POST", "/v1/library/work-items", { items: [{ name: "x" }] })
+		);
+
+		const [url, init] = fetch.mock.calls[0] as [string, RequestInit];
+		expect(url).toBe("http://localhost:3000/api/v1/library/work-items");
+		expect(init.method).toBe("POST");
+		expect(init.body).toBe(JSON.stringify({ items: [{ name: "x" }] }));
+		expect(init.headers).toMatchObject({ "Content-Type": "application/json" });
+		expect(error.code).toBe("validation_failed");
+		expect(error.message).toContain("nothing was written: Invalid field: items.0.unit_price.");
+	});
+
 	it("tells the assistant where to get a key on a 401", async () => {
 		answer(401, { error: { code: "unauthorized", message: "Missing, invalid or revoked API key." } });
 

@@ -8,7 +8,8 @@ A project has lots, one per trade (ELEC for electricity, PLOM for plumbing...), 
 Amounts are excluding VAT (HT) in the project's currency unless a field says ttc or vat. A unit_price of null means the line is not priced yet; 0 is a price.
 Start with list_projects to find ids. For amounts, call get_project_totals instead of adding lines up. To read a whole lot, get_lot returns it with all its lines.
 The library (Bibliothèque) is what the organization reuses from one project to the next: its trades (list_trades, the lot types with their prefix and the guidance the assistant follows), its library groups (list_library_groups: a trade and a name, which a project's lot is created from), its work items (list_work_items: reusable lines with a reference price and the supplies they prescribe, filed in a group or under a trade) and its supplies (list_supplies: the products it prescribes). Every organization has one, a company's as well as a project manager's, and reads it even when its project manager space is closed.
-Every tool is read-only and sees only the organization the API key belongs to.`;
+The library tools also write: create_*, update_*, archive_* (reversible: nothing is deleted for good), move_work_items, link_work_item_supply and unlink_work_item_supply. A create or an update takes up to 100 items and lands whole or not at all; load a long price list in batches, reading ids from list_trades and list_library_groups first. The key acts as the member who created it, with their role: admins write trades, admins and members write groups, work items and supplies, a viewer only reads. Projects are read-only.
+Every tool sees only the organization the API key belongs to.`;
 
 export function createServer(client: RaygisterClient): McpServer {
 	const server = new McpServer(

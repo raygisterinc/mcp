@@ -7,7 +7,8 @@ const TIMEOUT_MS = 30_000;
 /**
  * An API refusal or failure. `code` is the stable code of the API's
  * `{ "error": { "code", "message" } }` body (unauthorized, moe_access_ended,
- * not_found, internal_error), or network_error when the API was not reached.
+ * forbidden, not_found, validation_failed, internal_error), or network_error
+ * when the API was not reached.
  * `message` is written for the assistant reading the tool result.
  */
 export class RaygisterApiError extends Error {
@@ -25,9 +26,13 @@ export class RaygisterApiError extends Error {
 export type QueryValue = string | number | boolean | undefined | null;
 export type Query = Record<string, QueryValue>;
 
+export type WriteMethod = "DELETE" | "PATCH" | "POST" | "PUT";
+
 export interface RaygisterClient {
 	/** The parsed JSON body of a successful GET; throws a RaygisterApiError otherwise. */
 	get(path: string, query?: Query): Promise<unknown>;
+	/** The parsed JSON body of a successful write; throws a RaygisterApiError otherwise. */
+	send(method: WriteMethod, path: string, body?: unknown): Promise<unknown>;
 }
 
 export interface Pagination {
@@ -71,7 +76,13 @@ function explain(status: number, code: string, apiMessage: string | null): strin
 		case "moe_access_ended":
 			return "The organization's access to the Raygister project manager space has ended, so its API keys are refused. Renewing the subscription restores access.";
 		case "not_found":
-			return "Not found: no item with this id in the organization, or it was deleted. List the parent items to find a valid id.";
+			return apiMessage && apiMessage !== "Resource not found."
+				? `${apiMessage} List the parent items to find a valid id.`
+				: "Not found: no item with this id in the organization, or it was deleted. List the parent items to find a valid id.";
+		case "forbidden":
+			return `Refused: ${apiMessage ?? "the key's role does not allow this write."} The key acts as the member who created it, with their role in the organization.`;
+		case "validation_failed":
+			return `The Raygister API refused the input, nothing was written: ${apiMessage ?? "a field is not valid."}`;
 		case "internal_error":
 			return "The Raygister API failed on its side. Try again in a moment.";
 		default:
@@ -96,53 +107,60 @@ export function createClient(env: Env): RaygisterClient {
 		"User-Agent": `raygister-mcp/${VERSION}`,
 	};
 
+	async function request(method: string, url: string, body?: unknown): Promise<unknown> {
+		let response: Response;
+		try {
+			response = await fetch(url, {
+				body: body === undefined ? undefined : JSON.stringify(body),
+				headers: body === undefined ? headers : { ...headers, "Content-Type": "application/json" },
+				method,
+				signal: AbortSignal.timeout(TIMEOUT_MS),
+			});
+		} catch (cause) {
+			const reason =
+				cause instanceof Error && cause.name === "TimeoutError"
+					? `no answer after ${TIMEOUT_MS / 1000} s`
+					: cause instanceof Error
+						? cause.message
+						: String(cause);
+			logger.error("network error", { url, reason });
+			throw new RaygisterApiError(
+				`Could not reach the Raygister API at ${env.RAYGISTER_API_URL}: ${reason}.`,
+				"network_error",
+				0
+			);
+		}
+
+		const text = await response.text();
+		let parsed: unknown = null;
+		if (text.length > 0) {
+			try {
+				parsed = JSON.parse(text);
+			} catch {
+				parsed = text;
+			}
+		}
+
+		if (!response.ok) {
+			const error = readErrorBody(parsed);
+			const code = error.code ?? codeFromStatus(response.status);
+			logger.warn("api error", { url, status: response.status, code });
+			throw new RaygisterApiError(
+				explain(response.status, code, error.message),
+				code,
+				response.status
+			);
+		}
+
+		return parsed;
+	}
+
 	return {
 		async get(path, query) {
-			const url = buildUrl(env.RAYGISTER_API_URL, path, query);
-			let response: Response;
-			try {
-				response = await fetch(url, {
-					headers,
-					method: "GET",
-					signal: AbortSignal.timeout(TIMEOUT_MS),
-				});
-			} catch (cause) {
-				const reason =
-					cause instanceof Error && cause.name === "TimeoutError"
-						? `no answer after ${TIMEOUT_MS / 1000} s`
-						: cause instanceof Error
-							? cause.message
-							: String(cause);
-				logger.error("network error", { url, reason });
-				throw new RaygisterApiError(
-					`Could not reach the Raygister API at ${env.RAYGISTER_API_URL}: ${reason}.`,
-					"network_error",
-					0
-				);
-			}
-
-			const text = await response.text();
-			let body: unknown = null;
-			if (text.length > 0) {
-				try {
-					body = JSON.parse(text);
-				} catch {
-					body = text;
-				}
-			}
-
-			if (!response.ok) {
-				const error = readErrorBody(body);
-				const code = error.code ?? codeFromStatus(response.status);
-				logger.warn("api error", { url, status: response.status, code });
-				throw new RaygisterApiError(
-					explain(response.status, code, error.message),
-					code,
-					response.status
-				);
-			}
-
-			return body;
+			return await request("GET", buildUrl(env.RAYGISTER_API_URL, path, query));
+		},
+		async send(method, path, body) {
+			return await request(method, buildUrl(env.RAYGISTER_API_URL, path), body);
 		},
 	};
 }
@@ -171,4 +189,18 @@ export async function getPage(
 		throw unexpected(path);
 	}
 	return { data: body.data, pagination: body.pagination as unknown as Pagination };
+}
+
+/** The ids a write answers, in the order of its input. */
+export async function sendWrite(
+	client: RaygisterClient,
+	method: WriteMethod,
+	path: string,
+	body?: unknown
+): Promise<{ ids: string[] }> {
+	const answer = await client.send(method, path, body);
+	if (!(isRecord(answer) && isRecord(answer.data) && Array.isArray(answer.data.ids))) {
+		throw unexpected(path);
+	}
+	return { ids: answer.data.ids.map(String) };
 }

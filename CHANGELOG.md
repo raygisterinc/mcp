@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Needs the Raygister API with the library routes (`/api/v1/library/*`, RAY-1151).
+Needs the Raygister API with the library routes (`/api/v1/library/*`, RAY-1151 for reads, RAY-1154 for writes).
 
 ### Added
 
 - Library reads, one tool per route: `list_trades`, `get_trade`, `list_library_groups`, `get_library_group`, `list_work_items` (filters `group_id`, `trade_id`, `archived`, `search`), `get_work_item`, `list_supplies` (filters `archived`, `search`), `get_supply`.
 - The server instructions say what the library is. It is readable by every organization, a company's as well as a project manager's, even when the project manager space is closed to it.
+- Library writes, one tool per route (RAY-1154): `create_trades`, `update_trades`, `set_trade_guidance`, `create_library_groups`, `update_library_groups`, `archive_library_groups`, `create_work_items`, `update_work_items`, `archive_work_items`, `move_work_items`, `link_work_item_supply`, `unlink_work_item_supply`, `create_supplies`, `update_supplies`, `archive_supplies`. A create or an update takes up to 100 items, all or none. Write tools carry `readOnlyHint: false`; none is destructive.
+- A 403 for a role short of the write and a 422 for an invalid body become tool errors that name the cause.
+
+### Changed
+
+- API keys are personal (RAY-1153): a key acts as its creator, with their current role.
 
 ## [0.2.0] - 2026-10-29
 
