@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import { type Query, RaygisterApiError, type RaygisterClient } from "../src/client.js";
 import { createServer } from "../src/server.js";
 import {
+	GROUP_ID,
+	group,
 	LOT_ID,
 	location,
 	lot,
@@ -11,7 +13,10 @@ import {
 	page,
 	project,
 	specification,
+	supply,
 	totals,
+	trade,
+	workItem,
 } from "./fixtures.js";
 
 interface Call {
@@ -58,24 +63,77 @@ afterEach(async () => {
 });
 
 describe("tools", () => {
-	it("are seven, read-only, each with an output schema", async () => {
+	it("are fifteen, read-only, each with an output schema", async () => {
 		const client = await connect(fakeApi({}).api);
 
 		const { tools } = await client.listTools();
 
 		expect(tools.map((tool) => tool.name).sort()).toEqual([
+			"get_library_group",
 			"get_lot",
 			"get_project",
 			"get_project_totals",
+			"get_supply",
+			"get_trade",
+			"get_work_item",
+			"list_library_groups",
 			"list_locations",
 			"list_lots",
 			"list_projects",
 			"list_specifications",
+			"list_supplies",
+			"list_trades",
+			"list_work_items",
 		]);
 		for (const tool of tools) {
 			expect(tool.annotations).toMatchObject({ destructiveHint: false, readOnlyHint: true });
 			expect(tool.outputSchema).toBeDefined();
 		}
+	});
+
+	it("reads the library with its filters", async () => {
+		const { api, calls } = fakeApi({
+			"/v1/library/supplies": page([supply]),
+			"/v1/library/trades": page([trade]),
+			"/v1/library/work-items": page([workItem]),
+			[`/v1/library/groups/${GROUP_ID}`]: { data: group },
+		});
+		const client = await connect(api);
+
+		const trades = await client.callTool({ arguments: {}, name: "list_trades" });
+		const items = await client.callTool({
+			arguments: { group_id: GROUP_ID, search: "lavabo" },
+			name: "list_work_items",
+		});
+		const supplies = await client.callTool({
+			arguments: { archived: true },
+			name: "list_supplies",
+		});
+		const groupResult = await client.callTool({
+			arguments: { group_id: GROUP_ID },
+			name: "get_library_group",
+		});
+
+		for (const result of [trades, items, supplies, groupResult]) {
+			expect(result.isError).toBeFalsy();
+		}
+		expect(items.structuredContent).toMatchObject({ work_items: [workItem] });
+		expect(groupResult.structuredContent).toEqual(group);
+		expect(calls).toContainEqual({
+			path: "/v1/library/work-items",
+			query: {
+				archived: undefined,
+				group_id: GROUP_ID,
+				page: undefined,
+				per_page: undefined,
+				search: "lavabo",
+				trade_id: undefined,
+			},
+		});
+		expect(calls).toContainEqual({
+			path: "/v1/library/supplies",
+			query: { archived: true, page: undefined, per_page: undefined, search: undefined },
+		});
 	});
 
 	it("pages projects and answers in structured content and in text", async () => {

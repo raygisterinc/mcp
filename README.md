@@ -8,7 +8,7 @@ Read-only Model Context Protocol server for [Raygister](https://www.raygister.co
 
 ## Features
 
-Seven read-only tools over the Raygister public API. No tool changes anything, and every tool sees only the organization the API key belongs to.
+Fifteen read-only tools over the Raygister public API: seven on projects, eight on the organization's library. No tool changes anything, and every tool sees only the organization the API key belongs to.
 
 - **`list_projects`** browse the organization's projects
 - **`get_project`** read one project: phase, client, address, dates, forecast budget, fee settings
@@ -17,6 +17,10 @@ Seven read-only tools over the Raygister public API. No tool changes anything, a
 - **`get_lot`** one lot with all its specifications in a single call
 - **`list_specifications`** the lines of a lot: quantity, unit, unit price, VAT rate, norms
 - **`list_locations`** the rooms, floors and zones of a project, with their hierarchy and surface
+- **`list_trades`**, **`get_trade`** the library's trades (lot types) with their prefix and AI guidance
+- **`list_library_groups`**, **`get_library_group`** the library's groups, which a project's lot is created from
+- **`list_work_items`**, **`get_work_item`** the library's work items: reusable lines with a reference price and their supplies
+- **`list_supplies`**, **`get_supply`** the library's supplies: the products the organization prescribes
 
 Every tool returns structured content matching its output schema, plus the same JSON as text for clients that ignore schemas.
 
@@ -54,7 +58,7 @@ Without a key the server exits at startup, which MCP clients report as a closed 
 2. Open **Settings** then **API keys** (`/settings/api-keys`).
 3. Create a key. It starts with `dk_` and is shown only once: copy it into your MCP client config.
 
-A key belongs to one organization and reads only its data. It stops working when it is revoked, and while the organization's access to the project manager space has ended (the tools then say so); renewing the subscription restores it.
+A key belongs to one organization and reads only its data. It stops working when it is revoked. While the organization's access to the project manager space has ended, the project tools say so and the library tools keep working; renewing the subscription restores the projects.
 
 ## Amounts
 
@@ -79,6 +83,14 @@ Amounts are excluding VAT (HT), in the project's currency, unless a field says `
 | `get_lot`             | One lot with `specifications` (up to 1000).                                   | `project_id`, `lot_id`   |
 | `list_specifications` | `{ specifications, pagination }`, in grid order.                              | `project_id`, `lot_id`   |
 | `list_locations`      | `{ locations }`, not paginated.                                               | `project_id`             |
+| `list_trades`         | `{ trades, pagination }`, by name, hidden ones included.                      | none                     |
+| `get_trade`           | One trade with its guidance.                                                  | `trade_id`               |
+| `list_library_groups` | `{ groups, pagination }`, in library order; `archived`.                       | none                     |
+| `get_library_group`   | One library group.                                                            | `group_id`               |
+| `list_work_items`     | `{ work_items, pagination }`, by name; `group_id`, `trade_id`, `archived`, `search`. | none              |
+| `get_work_item`       | One work item with its supplies.                                              | `work_item_id`           |
+| `list_supplies`       | `{ supplies, pagination }`, by name; `archived`, `search`.                    | none                     |
+| `get_supply`          | One supply.                                                                   | `supply_id`              |
 
 Paginated tools also accept `page` (default 1) and `per_page` (default 20, max 100).
 

@@ -123,6 +123,81 @@ export const totals = {
 	works: { total_ht: 2610, total_ttc: 3132, total_vat: 522, vat: [vat] },
 };
 
+export const GROUP_ID = "ccc00001-0001-4000-8000-000000000001";
+
+const STAMP = "2026-11-16T15:30:58.444415+00:00";
+const tradeRef = { id: "type-plom", name: "Plomberie", prefix: "PLOM" };
+
+export const trade = {
+	...tradeRef,
+	created_at: STAMP,
+	description: null,
+	guidelines: "Décrire les réseaux d'alimentation et d'évacuation.",
+	icon: null,
+	is_hidden: false,
+	is_raygister: true,
+	updated_at: STAMP,
+	vocabulary: ["sanitaire", "évacuation"],
+};
+
+export const group = {
+	archived_at: null,
+	budget_previsionnel: null,
+	consultant_management_fee: null,
+	created_at: STAMP,
+	custom_name: "Salle de bain",
+	default_tax_rate_id: null,
+	description: null,
+	fee_type: null,
+	id: GROUP_ID,
+	name: "Salle de bain",
+	notes: null,
+	reference: "BPU-SDB",
+	sort_order: 0,
+	trade: tradeRef,
+	updated_at: STAMP,
+};
+
+export const supply = {
+	archived_at: null,
+	brand: "Grohe",
+	category: "Robinetterie",
+	created_at: STAMP,
+	custom_unit: null,
+	description: null,
+	id: "bbb00001-0001-4000-8000-000000000001",
+	image_url: null,
+	name: "Mitigeur lavabo",
+	product_url: null,
+	public_price: 189,
+	reference: "GRO-23",
+	supplier: null,
+	tax_rate: { id: "rate-20", name: "TVA 20%", rate: 20 },
+	unit: "u",
+	updated_at: STAMP,
+};
+
+export const workItem = {
+	archived_at: null,
+	created_at: STAMP,
+	currency: "EUR",
+	custom_unit: null,
+	description: "Fourniture et pose d'un lavabo",
+	group_id: GROUP_ID,
+	id: "bbb00002-0001-4000-8000-000000000001",
+	name: "Pose lavabo",
+	norms: null,
+	quantity: 1,
+	reference: "PL-01",
+	sort_order: 0,
+	supplies: [{ brand: "Grohe", id: supply.id, name: supply.name, reference: "GRO-23" }],
+	tax_rate: { id: "rate-10", name: "TVA 10%", rate: 10 },
+	trade_id: tradeRef.id,
+	unit: "u",
+	unit_price: 250,
+	updated_at: STAMP,
+};
+
 export function page<T>(data: T[]) {
 	return { data, pagination: { page: 1, per_page: 20, total: data.length, total_pages: 1 } };
 }

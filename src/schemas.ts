@@ -191,3 +191,112 @@ export const ProjectTotalsSchema = z.looseObject({
 		vat: z.array(VatLineSchema).describe("VAT bucketed per rate."),
 	}),
 });
+
+/** The library's archived and search filters, shared by its lists. */
+export const ArchivedInput = z
+	.boolean()
+	.optional()
+	.describe("True to list the archived items instead of the active ones. Defaults to false.");
+
+export const SearchInput = z
+	.string()
+	.max(200)
+	.optional()
+	.describe("Text to look for, matched as plain text whatever its case.");
+
+export const TradeSchema = z.looseObject({
+	created_at: z.string(),
+	description: z
+		.string()
+		.nullable()
+		.describe("Null: the Raygister description of the trade applies."),
+	guidelines: z
+		.string()
+		.nullable()
+		.describe("The AI guidelines the organization wrote for the trade."),
+	icon: z.string().nullable().describe("A Lucide icon name, null for the default icon."),
+	id: z.string(),
+	is_hidden: z.boolean().describe("Hidden from the pickers, kept on the lots that carry it."),
+	is_raygister: z
+		.boolean()
+		.describe("True for a copy of a Raygister trade, false for one the organization added."),
+	name: z.string(),
+	prefix: z.string().describe("Trade prefix, such as PLOM, used in line references."),
+	updated_at: z.string(),
+	vocabulary: z
+		.array(z.string())
+		.nullable()
+		.describe("Words that file a line under the trade; null: the Raygister vocabulary applies."),
+});
+
+const TradeRefSchema = z.looseObject({ id: z.string(), name: z.string(), prefix: z.string() });
+
+export const LibraryGroupSchema = z.looseObject({
+	archived_at: z.string().nullable(),
+	budget_previsionnel: z.number().nullable().describe("Forecast budget, HT."),
+	consultant_management_fee: z.number().nullable(),
+	created_at: z.string(),
+	custom_name: z.string().nullable(),
+	default_tax_rate_id: z.string().nullable(),
+	description: z.string().nullable(),
+	fee_type: z.string().nullable(),
+	id: z.string(),
+	name: z.string().describe("The custom name, else the trade's name."),
+	notes: z.string().nullable(),
+	reference: z.string().nullable().describe("The organization's own code (price list, ERP)."),
+	sort_order: z.number(),
+	trade: TradeRefSchema,
+	updated_at: z.string(),
+});
+
+export const WorkItemSchema = z.looseObject({
+	archived_at: z.string().nullable(),
+	created_at: z.string(),
+	currency: z.string(),
+	custom_unit: z.string().nullable().describe("The organization's own unit, when unit is null."),
+	description: z.string().nullable(),
+	group_id: z.string().nullable().describe("The library group it is filed in, null when in none."),
+	id: z.string(),
+	name: z.string(),
+	norms: z.unknown().describe("Technical standards the work item refers to."),
+	quantity: z.number().nullable(),
+	reference: z.string().nullable().describe("The organization's own code (price list, ERP)."),
+	sort_order: z.number(),
+	supplies: z
+		.array(
+			z.looseObject({
+				brand: z.string().nullable(),
+				id: z.string(),
+				name: z.string(),
+				reference: z.string().nullable(),
+			})
+		)
+		.describe("The supplies it prescribes, in order."),
+	tax_rate: TaxRateSchema.nullable(),
+	trade_id: z.string().nullable().describe("Its trade; a work item in a group follows the group's."),
+	unit: z.string().nullable(),
+	unit_price: z
+		.number()
+		.nullable()
+		.describe("Reference price HT, in currency. Null means not priced; 0 is a price."),
+	updated_at: z.string(),
+});
+
+export const SupplySchema = z.looseObject({
+	archived_at: z.string().nullable(),
+	brand: z.string().nullable(),
+	category: z.string().nullable(),
+	created_at: z.string(),
+	custom_unit: z.string().nullable(),
+	description: z.string().nullable(),
+	id: z.string(),
+	image_url: z.string().nullable(),
+	name: z.string(),
+	product_url: z.string().nullable(),
+	public_price: z.number().nullable().describe("The supplier's public price, HT."),
+	reference: z.string().nullable(),
+	supplier: z.string().nullable(),
+	tax_rate: TaxRateSchema.nullable(),
+	unit: z.string().nullable(),
+	updated_at: z.string(),
+});

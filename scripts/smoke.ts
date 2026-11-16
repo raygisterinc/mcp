@@ -77,6 +77,34 @@ async function main(): Promise<void> {
 		}
 	}
 
+	await call("list_trades", { per_page: 5 }).then(async (trades) => {
+		const tradeId = firstId(trades?.trades);
+		if (tradeId) {
+			await call("get_trade", { trade_id: tradeId });
+		}
+	});
+	const groups = await call("list_library_groups", { per_page: 5 });
+	const groupId = firstId(groups?.groups);
+	if (groupId) {
+		await call("get_library_group", { group_id: groupId });
+	} else {
+		skip("get_library_group", "no group returned");
+	}
+	const items = await call("list_work_items", { per_page: 5 });
+	const itemId = firstId(items?.work_items);
+	if (itemId) {
+		await call("get_work_item", { work_item_id: itemId });
+	} else {
+		skip("get_work_item", "no work item returned");
+	}
+	const supplies = await call("list_supplies", { per_page: 5 });
+	const supplyId = firstId(supplies?.supplies);
+	if (supplyId) {
+		await call("get_supply", { supply_id: supplyId });
+	} else {
+		skip("get_supply", "no supply returned");
+	}
+
 	await client.close();
 	process.stderr.write(failed > 0 ? `\n${failed} tool(s) failed\n` : "\nAll tools answered\n");
 	process.exit(failed > 0 ? 1 : 0);

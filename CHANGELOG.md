@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Needs the Raygister API with the library routes (`/api/v1/library/*`, RAY-1151).
+
+### Added
+
+- Library reads, one tool per route: `list_trades`, `get_trade`, `list_library_groups`, `get_library_group`, `list_work_items` (filters `group_id`, `trade_id`, `archived`, `search`), `get_work_item`, `list_supplies` (filters `archived`, `search`), `get_supply`.
+- The server instructions say what the library is. It is readable by every organization, a company's as well as a project manager's, even when the project manager space is closed to it.
+
 ## [0.2.0] - 2026-10-29
 
 Built on the Raygister API v1 contract of October 2026, which this version needs.
