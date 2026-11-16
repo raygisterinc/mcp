@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-16
+
+### Deprecated
+
+- This package is deprecated. Raygister serves the MCP server at `https://app.raygister.com/mcp`, signed in with your Raygister account (OAuth), with the same tools. The README says how to move. Installed versions keep working with their API key.
+
 ## [0.3.0] - 2026-11-16
 
 Needs the Raygister API with the library routes (`/api/v1/library/*`, RAY-1151 for reads, RAY-1154 for writes).
