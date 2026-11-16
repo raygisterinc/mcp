@@ -11,7 +11,16 @@ export interface Tool {
 	register(server: McpServer, ctx: ToolContext): void;
 }
 
+/**
+ * What a tool does to the organization's data. Reads change nothing; a create
+ * adds rows; an update or an archive changes rows (reversible: the API
+ * deletes nothing for good).
+ */
+export type ToolEffect = "read" | "create" | "update";
+
 interface ToolSpec<Input extends z.ZodObject> {
+	/** Read when left out. */
+	effect?: ToolEffect;
 	name: string;
 	title: string;
 	description: string;
@@ -21,13 +30,20 @@ interface ToolSpec<Input extends z.ZodObject> {
 	run(args: z.infer<Input>, ctx: ToolContext): Promise<Record<string, unknown>>;
 }
 
-/** Every tool reads the key's organization through the API and changes nothing. */
-const READ_ONLY = {
-	destructiveHint: false,
-	idempotentHint: true,
-	openWorldHint: false,
-	readOnlyHint: true,
-} as const;
+/** Every tool sees only the key's organization, through the API. */
+const ANNOTATIONS: Record<
+	ToolEffect,
+	{ destructiveHint: boolean; idempotentHint: boolean; openWorldHint: false; readOnlyHint: boolean }
+> = {
+	create: {
+		destructiveHint: false,
+		idempotentHint: false,
+		openWorldHint: false,
+		readOnlyHint: false,
+	},
+	read: { destructiveHint: false, idempotentHint: true, openWorldHint: false, readOnlyHint: true },
+	update: { destructiveHint: true, idempotentHint: true, openWorldHint: false, readOnlyHint: false },
+};
 
 /**
  * A tool answers twice: `structuredContent` for clients that read the output
@@ -43,7 +59,7 @@ export function defineTool<Input extends z.ZodObject>(spec: ToolSpec<Input>): To
 			server.registerTool(
 				spec.name,
 				{
-					annotations: { ...READ_ONLY, title: spec.title },
+					annotations: { ...ANNOTATIONS[spec.effect ?? "read"], title: spec.title },
 					description: spec.description,
 					inputSchema,
 					outputSchema: spec.outputSchema,
